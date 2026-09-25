@@ -70,9 +70,9 @@ if config_env() != :test do
   # an environment variable wins over the conf file
   get = fn env_key, conf_key -> System.get_env(env_key) || conf[conf_key] end
 
-  if registry = get.("COMPOS_DAEMON_REGISTRY", "registry") do
-    config :compos_core, daemon_registry_path: Path.expand(registry)
-  end
+  # Resolve the default with the current user's HOME, not the build user's HOME.
+  registry = get.("COMPOS_DAEMON_REGISTRY", "registry") || "~/.compos/daemons.json"
+  config :compos_core, daemon_registry_path: Path.expand(registry)
 
   if workspace = get.("COMPOS_WORKSPACE_ROOT", "workspace") do
     config :compos_core, workspace_root: Path.expand(workspace)

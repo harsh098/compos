@@ -52,10 +52,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          export HOME="$RUNNER_TEMP/compos-user"
+          mkdir -p "$HOME"
           export COMPOS_INSTALL_DIR="$RUNNER_TEMP/compos-install"
           export COMPOS_HOME="$RUNNER_TEMP/compos-state"
           export COMPOS_CONFIG="$RUNNER_TEMP/compos-config"
-          export COMPOS_DAEMON_REGISTRY="$RUNNER_TEMP/compos-daemons.json"
           export COMPOS_BIND=127.0.0.1
           export COMPOS_PORT=14004
           export COMPOS_APP_PORT=14005
@@ -69,6 +70,7 @@ jobs:
           for attempt in {1..45}; do
             if curl --fail --silent --show-error --output /dev/null http://127.0.0.1:14004/; then
               test -s "$COMPOS_CONFIG/grammars/whatsapp.so"
+              test -s "$HOME/.compos/daemons.json"
               exit 0
             fi
             if ! kill -0 "$server_pid" 2>/dev/null; then
