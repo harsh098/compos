@@ -54,15 +54,21 @@ jobs:
           set -euo pipefail
           export COMPOS_INSTALL_DIR="$RUNNER_TEMP/compos-install"
           export COMPOS_HOME="$RUNNER_TEMP/compos-state"
+          export COMPOS_CONFIG="$RUNNER_TEMP/compos-config"
           export COMPOS_DAEMON_REGISTRY="$RUNNER_TEMP/compos-daemons.json"
           export COMPOS_BIND=127.0.0.1
           export COMPOS_PORT=14004
           export COMPOS_APP_PORT=14005
+          mkdir -p "$RUNNER_TEMP/no-cc"
+          printf '#!/bin/sh\necho unexpected compiler call >&2\nexit 86\n' > "$RUNNER_TEMP/no-cc/cc"
+          chmod +x "$RUNNER_TEMP/no-cc/cc"
+          export PATH="$RUNNER_TEMP/no-cc:$PATH"
           ./burrito_out/compos_linux_x86_64 > "$RUNNER_TEMP/compos.log" 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true; cat "$RUNNER_TEMP/compos.log"' EXIT
           for attempt in {1..45}; do
             if curl --fail --silent --show-error --output /dev/null http://127.0.0.1:14004/; then
+              test -s "$COMPOS_CONFIG/grammars/whatsapp.so"
               exit 0
             fi
             if ! kill -0 "$server_pid" 2>/dev/null; then
