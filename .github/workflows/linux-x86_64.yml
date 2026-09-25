@@ -116,4 +116,4 @@ jobs:
             exit 0
           fi
           printf 'Automated Linux x86_64 build from commit %s.\n\nThe archive includes the executable and SHA256SUMS for the executable. Verify the archive with the separate .sha256 asset before extracting.\n' "$GITHUB_SHA" > release-notes.md
-          gh release create "$tag" dist/compos-linux-x86_64.tar.gz dist/compos-linux-x86_64.tar.gz.sha256 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Linux x86_64 ${GITHUB_SHA:0:7}" --notes-file release-notes.md --prerelease --latest=false
+          gh release create "$tag" dist/compos-linux-x86_64.tar.gz dist/compos-linux-x86_64.tar.gz.sha256 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Linux x86_64 ${GITHUB_SHA:0:7}" --notes-file release-notes.md --latest
