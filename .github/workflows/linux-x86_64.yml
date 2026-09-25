@@ -80,11 +80,40 @@ jobs:
           cp burrito_out/compos_linux_x86_64 dist/compos-linux-x86_64
           (cd dist && sha256sum compos-linux-x86_64 > SHA256SUMS)
           tar -C dist -czf dist/compos-linux-x86_64.tar.gz compos-linux-x86_64 SHA256SUMS
+          (cd dist && sha256sum compos-linux-x86_64.tar.gz > compos-linux-x86_64.tar.gz.sha256)
 
       - uses: actions/upload-artifact@v4
         with:
           name: compos-linux-x86_64
-          path: dist/compos-linux-x86_64.tar.gz
+          path: |
+            dist/compos-linux-x86_64.tar.gz
+            dist/compos-linux-x86_64.tar.gz.sha256
           if-no-files-found: error
           retention-days: 30
           compression-level: 0
+
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: compos-linux-x86_64
+          path: dist
+
+      - name: Publish per-commit release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="build-${GITHUB_SHA}"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $tag already exists"
+            exit 0
+          fi
+          printf 'Automated Linux x86_64 build from commit %s.\n\nThe archive includes the executable and SHA256SUMS for the executable. Verify the archive with the separate .sha256 asset before extracting.\n' "$GITHUB_SHA" > release-notes.md
+          gh release create "$tag" dist/compos-linux-x86_64.tar.gz dist/compos-linux-x86_64.tar.gz.sha256 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Linux x86_64 ${GITHUB_SHA:0:7}" --notes-file release-notes.md --prerelease --latest=false
