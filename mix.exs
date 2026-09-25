@@ -30,7 +30,14 @@ defmodule Compos.MixProject do
         steps: [:assemble, &copy_scheme_packages/1, &Burrito.wrap/1],
         burrito: [
           targets: [
-            macos_arm: [os: :darwin, cpu: :aarch64]
+            macos_arm: [os: :darwin, cpu: :aarch64],
+            # Rustler NIFs need an ERTS built for the same Linux libc.
+            linux_x86_64: [
+              os: :linux,
+              cpu: :x86_64,
+              custom_erts: System.get_env("COMPOS_CUSTOM_ERTS"),
+              skip_nifs: true
+            ]
           ]
         ]
       ]

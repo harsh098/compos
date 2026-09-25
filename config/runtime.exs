@@ -79,7 +79,16 @@ if config_env() != :test do
   end
 
   if port = get.("COMPOS_PORT", "port") do
-    config :compos_ui, Compos.Ui.Endpoint, http: [ip: {0, 0, 0, 0}, port: String.to_integer(port)]
+    bind = get.("COMPOS_BIND", "bind") || "0.0.0.0"
+
+    ip =
+      case bind do
+        "127.0.0.1" -> {127, 0, 0, 1}
+        "0.0.0.0" -> {0, 0, 0, 0}
+        _ -> raise "COMPOS_BIND must be 127.0.0.1 or 0.0.0.0"
+      end
+
+    config :compos_ui, Compos.Ui.Endpoint, http: [ip: ip, port: String.to_integer(port)]
   end
 
   # the preview-app origin; a second daemon must move this port too
