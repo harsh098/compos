@@ -107,7 +107,7 @@ defmodule Compos.Core.TreeSitter do
   defp install_bundled(name, src, sources) do
     prebuilt =
       if :os.type() == {:unix, :linux} and
-           String.starts_with?(to_string(:erlang.system_info(:system_architecture)), "x86_64") do
+           List.starts_with?(:erlang.system_info(:system_architecture), ~c"x86_64") do
         Path.join([src, "prebuilt", "linux_x86_64", "#{name}.so"])
       end
 
